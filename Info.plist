@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+    <key>CFBundleIdentifier</key><string>local.codex.touchbar</string>
+    <key>CFBundleName</key><string>CodexToolBar</string>
+    <key>CFBundleDisplayName</key><string>CodexToolBar</string>
+    <key>CFBundleExecutable</key><string>CodexTouchBar</string>
+    <key>CFBundlePackageType</key><string>APPL</string>
+    <key>CFBundleShortVersionString</key><string>0.8.1</string>
+    <key>CFBundleVersion</key><string>11</string>
+    <key>LSMinimumSystemVersion</key><string>13.0</string>
+    <key>LSUIElement</key><true/>
+    <key>NSHighResolutionCapable</key><true/>
+    <key>NSPrincipalClass</key><string>NSApplication</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>仅在点击 Touch Bar 语音按钮后录音，将你说的话转成发给当前 Codex 任务的文字。</string>
+<key>NSSpeechRecognitionUsageDescription</key>
+<string>将语音转成文字；优先本机识别，不支持时由 Apple 联网识别。你点击发送后才会提交给 Codex。</string>
+</dict></plist>

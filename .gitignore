@@ -1,0 +1,17 @@
+.build/
+dist/
+.DS_Store
+*.xcuserstate
+
+__pycache__/
+# Private local acceptance history and selected personal artwork.
+docs/v*/
+docs/VALIDATION*.md
+docs/DESIGN.md
+docs/*.png
+docs/*.json
+docs/*.txt
+docs/*.aiff
+docs/*.wav
+design/
+Sources/CodexTouchBar/Resources/QuotaIcon.png

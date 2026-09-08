@@ -1,0 +1,33 @@
+name: macOS checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  check:
+    runs-on: macos-15-intel
+    timeout-minutes: 20
+    env:
+      TZ: UTC
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: swift --version
+      - name: Unit and protocol tests
+        run: swift test
+      - name: Build and verify signed application
+        run: ./scripts/build-app.sh
+      - name: Desktop router fixtures
+        run: python3 scripts/smoke-ipc.py .build/release/CodexTouchBar
+      - name: Packaging scripts
+        run: |
+          bash -n scripts/build-app.sh scripts/install.sh
+          python3 -m py_compile scripts/uninstall.py scripts/export-source.py
+          python3 scripts/uninstall.py --help
+# Hardware Touch Bar, sleep/wake and real microphone acceptance remain manual.
+# No Codex login, account queries, recording or real task submission runs in CI.
