@@ -10,7 +10,7 @@ Swift + AppKit 原生工具，版本 **0.8.1**。在 Touch Bar 上查看最近�
 
 ## 界面预览
 
-以下是公开源码使用模拟任务和模拟额度生成的界面，不包含真实账户或任务信息。公开版使用系统符号图标。
+以下是使用模拟任务和模拟额度生成的界面，不包含真实账户或任务信息。当前版本内置用户选定的彩色玻璃图标；以下历史截图可能仍显示系统符号图标。
 
 ![Touch Bar 双任务总览](docs/screenshots/touchbar-demo.png)
 
@@ -79,7 +79,7 @@ python3 scripts/smoke-ipc.py .build/release/CodexTouchBar
 python3 scripts/export-source.py /tmp/codex-touchbar-source-review
 ```
 
-公开目录采用白名单，不包含私人截图、诊断日志、历史备份或定制图标。个人安装仍保留所选彩色图标；公开源码缺少 PNG 时使用系统符号。详见 [贡献说明](CONTRIBUTING.md) 和 [NOTICE](NOTICE.md)。
+公开目录采用白名单，不包含私人截图、诊断日志或历史备份。菜单栏与 Touch Bar 使用仓库内置的彩色玻璃图标；缺少 PNG 时使用系统符号。详见 [贡献说明](CONTRIBUTING.md) 和 [NOTICE](NOTICE.md)。
 
 源码许可：[MIT](LICENSE)。本项目不是 OpenAI 或 Apple 官方产品。
 

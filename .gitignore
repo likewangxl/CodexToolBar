@@ -4,7 +4,7 @@ dist/
 *.xcuserstate
 
 __pycache__/
-# Private local acceptance history and selected personal artwork.
+# Private local acceptance history and design references.
 docs/v*/
 docs/VALIDATION*.md
 docs/DESIGN.md
@@ -14,4 +14,3 @@ docs/*.txt
 docs/*.aiff
 docs/*.wav
 design/
-Sources/CodexTouchBar/Resources/QuotaIcon.png

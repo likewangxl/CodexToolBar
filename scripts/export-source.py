@@ -15,7 +15,7 @@ allowed_files = ['Package.swift', 'Info.plist', 'README.md', 'LICENSE', 'NOTICE.
                  'docs/INSTALL.md', 'docs/COMPATIBILITY.md', 'docs/ACCEPTANCE.md']
 allowed_dirs = ['Sources', 'Tests', 'scripts', '.github', 'docs/screenshots']
 def ignored(folder, names):
-    return [name for name in names if name in ['QuotaIcon.png', '__pycache__', '.DS_Store'] or (Path(folder) / name).is_symlink()]
+    return [name for name in names if name in ['__pycache__', '.DS_Store'] or (Path(folder) / name).is_symlink()]
 dest.mkdir(parents=True)
 for name in allowed_files:
     source = root / name
@@ -24,5 +24,5 @@ for name in allowed_files:
 for name in allowed_dirs:
     shutil.copytree(root / name, dest / name, ignore=ignored)
 print('Source export prepared:', dest)
-print('Excluded: builds/backups, private diagnostics, personal screenshots, personal artwork and design references.')
+print('Excluded: builds/backups, private diagnostics, personal screenshots and design references.')
 print('Review before publishing. No repository, upload or release was created.')
