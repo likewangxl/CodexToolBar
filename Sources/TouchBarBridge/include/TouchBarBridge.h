@@ -6,3 +6,5 @@ void CTBPrepareTray(id target, SEL action);
 void CTBRemoveTray(void);
 
 CGFloat CTBDisplayWidth(void);
+BOOL CTBReadBrightness(CGDirectDisplayID *display, float *value);
+BOOL CTBWriteBrightness(CGDirectDisplayID display, float value);

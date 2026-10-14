@@ -2,7 +2,7 @@
 
 A lightweight, independent macOS Touch Bar companion for the Codex desktop app.
 
-Swift + AppKit 原生工具，版本 **0.8.1**。在 Touch Bar 上查看最近两个任务、执行步骤、ctx、账户额度，并用语音补充指令。面向配有 Touch Bar 的 Mac；界面目前以中文为主。
+Swift + AppKit 原生工具，版本 **0.8.2**。在 Touch Bar 上查看最近两个任务、执行步骤、ctx、账户额度，并用语音补充指令。面向配有 Touch Bar 的 Mac；界面目前以中文为主。
 
 公开名称为 **CodexToolBar**。为兼容已有安装，Swift target、可执行文件和应用目录暂沿用 `CodexTouchBar`，bundle id 保持 `local.codex.touchbar`。
 
@@ -10,7 +10,7 @@ Swift + AppKit 原生工具，版本 **0.8.1**。在 Touch Bar 上查看最近�
 
 ## 界面预览
 
-以下是使用模拟任务和模拟额度生成的界面，不包含真实账户或任务信息。当前版本内置用户选定的彩色玻璃图标；以下历史截图可能仍显示系统符号图标。
+以下是使用模拟任务和模拟额度生成的界面，不包含真实账户或任务信息。当前版本使用用户选定的彩色玻璃圆盘图标；以下历史截图可能仍显示旧图标。
 
 ![Touch Bar 双任务总览](docs/screenshots/touchbar-demo.png)
 
@@ -42,9 +42,15 @@ swift test
 ./scripts/install.sh
 ```
 
-安装到 `~/Applications/CodexTouchBar.app`。升级前从工具菜单退出；脚本保留上一版。源码构建为当前 CPU 架构，目标 Touch Bar Intel Mac 应在 Intel 环境构建。
+安装到 `~/Applications/CodexTouchBar.app`。升级前从工具菜单退出；脚本验证新包后替换旧版，不保留旧应用，并清除安装用的 dist 应用副本。源码构建为当前 CPU 架构，目标 Touch Bar Intel Mac 应在 Intel 环境构建。
 
-右键菜单栏可刷新额度与 Token、查看连接诊断、开启登录启动和跨应用常驻。首次点麦克风时按系统提示允许麦克风与语音识别。完整安装、权限、回滚和卸载说明见 [安装说明](docs/INSTALL.md)。
+右键菜单栏可刷新额度与 Token、查看连接诊断、开启登录启动和跨应用常驻。首次点麦克风时按系统提示允许麦克风与语音识别。完整安装、权限和卸载说明见 [安装说明](docs/INSTALL.md)。
+
+## Touch Bar 手势
+
+Touch Bar 手势：工具显示区域内，双指左右滑动调节当前输出设备音量，三指左右滑动调节内置屏幕亮度。左滑降低、右滑提高；手指数稳定约 0.15 秒且滑动超过阈值后开始，约 400 pt 对应完整调节范围。亮度最低为 5%。调节时临时显示百分比，松手后恢复原页面。
+
+多指触摸会阻止任务、语音等按钮动作；调节开始后改变手指数会停止本次调节，需全部松手再开始。锁屏、休眠及手动收起会取消手势。系统控制条、其他应用的 Touch Bar 区域及外接显示器不在控制范围内。不支持的软件音量或亮度接口会显示不可调节。亮度使用运行时检测的 DisplayServices 私有接口；真实多指操作和不同音频设备需实机验收。系统“Touch Bar 缩放”可能影响手势识别。
 
 ## 数据口径和刷新
 
@@ -79,7 +85,7 @@ python3 scripts/smoke-ipc.py .build/release/CodexTouchBar
 python3 scripts/export-source.py /tmp/codex-touchbar-source-review
 ```
 
-公开目录采用白名单，不包含私人截图、诊断日志或历史备份。菜单栏与 Touch Bar 使用仓库内置的彩色玻璃图标；缺少 PNG 时使用系统符号。详见 [贡献说明](CONTRIBUTING.md) 和 [NOTICE](NOTICE.md)。
+公开目录采用白名单，不包含私人截图、诊断日志或历史备份。菜单栏、Touch Bar 与应用图标使用同一套 Logo；构建脚本生成多尺寸 AppIcon.icns。详见 [贡献说明](CONTRIBUTING.md) 和 [NOTICE](NOTICE.md)。
 
 源码许可：[MIT](LICENSE)。本项目不是 OpenAI 或 Apple 官方产品。
 

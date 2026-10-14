@@ -5,6 +5,64 @@ import TouchBarBridge
 /// One expanding item prevents AppKit's principal-item centering from wasting the
 /// right side. Geometry always follows the width actually assigned by Touch Bar.
 final class DashboardView: NSButton {
+    private let controlSwipe = ControlSwipeRecognizer()
+    private let systemControls = SystemControls()
+    private var controlsCaptured = false
+    private var controlFeedback: String?
+    private var feedbackDismissal: DispatchWorkItem?
+    private var suppressTapUntil = Date.distantPast
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        addGestureRecognizer(controlSwipe)
+        controlSwipe.onCapture = { [weak self] in
+            guard let self else { return }
+            self.feedbackDismissal?.cancel()
+            self.controlsCaptured = true
+            self.systemControls.end()
+        }
+        controlSwipe.onChange = { [weak self] kind, delta in
+            guard let self else { return }
+            self.controlFeedback = self.systemControls.adjust(kind, delta: delta)
+            self.needsDisplay = true
+        }
+        controlSwipe.onFinish = { [weak self] in self?.finishControlSwipe() }
+    }
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    private func finishControlSwipe() {
+        controlsCaptured = false
+        suppressTapUntil = Date().addingTimeInterval(0.25)
+        systemControls.end()
+        feedbackDismissal?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            self?.controlFeedback = nil; self?.needsDisplay = true
+        }
+        feedbackDismissal = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: work)
+    }
+    func cancelControlSwipe() {
+        controlSwipe.isEnabled = false
+        controlSwipe.isEnabled = true
+        finishControlSwipe()
+        feedbackDismissal?.cancel()
+        controlFeedback = nil
+        needsDisplay = true
+    }
+    func previewControlFeedback() { controlFeedback = "音量  50%"; needsDisplay = true }
+    func verifyControlInput() -> Bool {
+        var taps = 0
+        onQuota = { taps += 1 }
+        let point = NSPoint(x: regions[0].midX, y: regions[0].midY)
+        performTap(at: point)
+        guard taps == 1 else { return false }
+        controlSwipe.onCapture?()
+        performTap(at: point)
+        guard taps == 1 else { return false }
+        controlSwipe.onFinish?()
+        performTap(at: point)
+        return taps == 1
+    }
     private(set) var drawCount = 0
     private var tasks: [TaskState] = []
     private var displayedUsage: UsageSnapshot?
@@ -66,6 +124,10 @@ final class DashboardView: NSButton {
     override func draw(_ dirtyRect: NSRect) {
         drawCount += 1
         NSColor.black.setFill(); dirtyRect.fill()
+        if let controlFeedback {
+            text(controlFeedback, rect: NSRect(x: 12, y: 5, width: max(1, bounds.width - 24), height: 22), size: 15, color: .white, weight: .semibold, alignment: .center)
+            return
+        }
         if let detail { BarDetailRenderer.draw(detail, in: bounds); return }
         let rectangles = regions
         let violet = NSColor(srgbRed: 0.72, green: 0.61, blue: 1, alpha: 1)
@@ -214,6 +276,7 @@ final class DashboardView: NSButton {
     }
     func voicePoint() -> NSPoint { NSPoint(x: regions[3].midX, y: regions[3].midY) }
     func activate(at point: NSPoint) {
+        guard !controlsCaptured, Date() >= suppressTapUntil, controlFeedback == nil else { return }
         if let detail {
             if let action = BarDetailRenderer.regions(detail, width: bounds.width).first(where: { $0.rect.contains(point) })?.action { onDetailAction?(action) }
             return

@@ -66,9 +66,14 @@ public final class AccountUsageReader {
         return result
     }
     private func fetch(home: URL, executable: URL?, timeout: TimeInterval, methods: [String]) throws -> [String: Result<Data, AccountUsageError>] {
-        let candidates = ["/Applications/Codex.app/Contents/Resources/codex", "/Applications/ChatGPT.app/Contents/Resources/codex",
-                          FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications/Codex.app/Contents/Resources/codex").path,
-                          FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications/ChatGPT.app/Contents/Resources/codex").path]
+        let roots = ["/Applications", FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications").path]
+        let candidates = roots.flatMap { root in
+            ["Codex.app", "ChatGPT.app"].flatMap { app in
+                ["codex", "codex-cli/bin/codex", "codex-cli/CodexCLI.app/Contents/MacOS/codex"].map {
+                    "\(root)/\(app)/Contents/Resources/\($0)"
+                }
+            }
+        }
         guard let cli = executable ?? candidates.first(where: { FileManager.default.isExecutableFile(atPath: $0) }).map({ URL(fileURLWithPath: $0) }) else { throw AccountUsageError.unavailable }
         if isCancelled { throw AccountUsageError.cancelled }
         let process = Process(), input = Pipe(), output = Pipe()

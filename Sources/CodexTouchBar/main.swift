@@ -71,7 +71,20 @@ if args.contains("--probe") {
     if let data = try? JSONSerialization.data(withJSONObject: result, options: [.prettyPrinted, .sortedKeys]), let text = String(data: data, encoding: .utf8) { print(text) }
     exit(lastTasks.isEmpty ? 1 : 0)
 }
+if args.contains("--probe-system-controls") {
+    let controls = SystemControls()
+    print(controls.adjust(.volume, delta: 0))
+    controls.end()
+    print(controls.adjust(.brightness, delta: 0))
+    exit(0)
+}
 let app = NSApplication.shared
+if args.contains("--verify-control-input") {
+    let view = DashboardView(frame: NSRect(x: 0, y: 0, width: 1004, height: 30))
+    let ok = view.verifyControlInput()
+    print(ok ? "PASS single tap and multi-touch action suppression" : "FAIL control input")
+    exit(ok ? 0 : 1)
+}
 if let fixture = value(after: "--speech-file-probe") {
     let voice = VoiceInputController(home: home ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".codex"))
     var finished = false, recognized = false

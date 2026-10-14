@@ -176,7 +176,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSTouchBarDelegate, NS
     }
 
     func applicationWillTerminate(_ notification: Notification) {
-        persistence?.stop(); voice.shutdown(); tokenStatistics.stop()
+        dashboard.cancelControlSwipe(); persistence?.stop(); voice.shutdown(); tokenStatistics.stop()
         if !rendering {
             if touchBar != nil { CTBDismiss(touchBar) }
             CTBRemoveTray()
@@ -424,7 +424,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSTouchBarDelegate, NS
             showPopover()
         }
     }
-    @objc private func hideTouchBar() { persistence?.policy.wanted = false; voice.suspend(); voice.cancel(); CTBDismiss(touchBar); barDetail.close(); monitor.select(popover.isShown ? selected?.id : nil); touchVisible = false; showButton.title = "显示 Touch Bar" }
+    @objc private func hideTouchBar() { dashboard.cancelControlSwipe(); persistence?.policy.wanted = false; voice.suspend(); voice.cancel(); CTBDismiss(touchBar); barDetail.close(); monitor.select(popover.isShown ? selected?.id : nil); touchVisible = false; showButton.title = "显示 Touch Bar" }
     @objc private func toggleTouchBar() { if touchBar.isVisible { hideTouchBar() } else { showTouchBar() } }
     @objc private func applicationChanged() { diagnostics.record("applicationChanged", ["bundle": NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "unknown"]); persistence?.schedule(activation: true) }
     @objc private func screenDidSleep() { sleeping = true; diagnostics.record("screenSlept"); updateSuspension() }
@@ -441,7 +441,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSTouchBarDelegate, NS
         persistence?.policy.suspended = paused
         diagnostics.record("suspensionChanged", ["paused": String(paused), "taskSuffix": String((barDetail.taskID ?? "").suffix(8)), "content": String(dashboard.detail?.content ?? false)])
         tokenStatistics.setSuspended(paused); monitor.setSuspended(paused)
-        if paused { voice.suspend(); barDetail.suspend(); CTBDismiss(touchBar) }
+        if paused { dashboard.cancelControlSwipe(); voice.suspend(); barDetail.suspend(); CTBDismiss(touchBar) }
         else {
             barDetail.resume()
             if touchVisible {
@@ -676,7 +676,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSTouchBarDelegate, NS
         let view: NSView
         if bar {
             let preview = DashboardView(frame: NSRect(x: 0, y: 0, width: CTBDisplayWidth(), height: 30))
-            preview.update(tasks: tasks, usage: usage, tokens: tokenSummary, selectedID: selected?.id, quotaState: quotaState); preview.detail = dashboard.detail; view = preview
+            preview.update(tasks: tasks, usage: usage, tokens: tokenSummary, selectedID: selected?.id, quotaState: quotaState); preview.detail = dashboard.detail
+            if CommandLine.arguments.contains("--control-preview") { preview.previewControlFeedback() }
+            view = preview
         } else { updateDetails(); view = popover.contentViewController!.view }
         let window = NSWindow(contentRect: view.frame, styleMask: [.borderless], backing: .buffered, defer: false)
         window.appearance = bar ? NSAppearance(named: .darkAqua) : menuPalette.appearance

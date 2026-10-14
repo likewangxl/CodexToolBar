@@ -9,6 +9,7 @@ cp .build/release/CodexTouchBar "$APP_PATH/Contents/MacOS/CodexTouchBar"
 cp Info.plist "$APP_PATH/Contents/Info.plist"
 cp README.md "$APP_PATH/Contents/Resources/README.md"
 cp LICENSE NOTICE.md "$APP_PATH/Contents/Resources/"
+bash "$PROJECT_DIR/scripts/build-icon.sh" "$APP_PATH/Contents/Resources/AppIcon.icns"
 if [ -f Sources/CodexTouchBar/Resources/QuotaIcon.png ]; then
     cp Sources/CodexTouchBar/Resources/QuotaIcon.png "$APP_PATH/Contents/Resources/QuotaIcon.png"
 else

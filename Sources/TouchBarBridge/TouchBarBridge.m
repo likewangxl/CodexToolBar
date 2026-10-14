@@ -7,6 +7,38 @@ static NSCustomTouchBarItem *trayItem;
 static void *dfrHandle;
 typedef void (*PresenceFunction)(NSString *, BOOL);
 
+// DisplayServices is private; resolve it once and report unavailable on failure.
+static int (*readBrightness)(CGDirectDisplayID, float *);
+static int (*writeBrightness)(CGDirectDisplayID, float);
+static void prepareBrightness(void) {
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        void *handle = dlopen("/System/Library/PrivateFrameworks/DisplayServices.framework/DisplayServices", RTLD_LAZY);
+        if (handle) {
+            readBrightness = dlsym(handle, "DisplayServicesGetBrightness");
+            writeBrightness = dlsym(handle, "DisplayServicesSetBrightness");
+        }
+    });
+}
+BOOL CTBReadBrightness(CGDirectDisplayID *display, float *value) {
+    prepareBrightness();
+    if (!readBrightness || !writeBrightness) return NO;
+    CGDirectDisplayID displays[16]; uint32_t count = 0;
+    if (CGGetOnlineDisplayList(16, displays, &count) != kCGErrorSuccess) return NO;
+    for (uint32_t i = 0; i < count; i++) {
+        if (CGDisplayIsBuiltin(displays[i]) && CGDisplayIsActive(displays[i])) {
+            *display = displays[i];
+            return readBrightness(*display, value) == 0;
+        }
+    }
+    return NO;
+}
+BOOL CTBWriteBrightness(CGDirectDisplayID display, float value) {
+    prepareBrightness();
+    if (!writeBrightness || !CGDisplayIsBuiltin(display) || !CGDisplayIsActive(display)) return NO;
+    return writeBrightness(display, fminf(1, fmaxf(0.05, value))) == 0;
+}
+
 void CTBPrepareTray(id target, SEL action) {
     SEL add = NSSelectorFromString(@"addSystemTrayItem:");
     if (![NSTouchBarItem respondsToSelector:add]) return;
