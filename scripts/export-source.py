@@ -11,7 +11,7 @@ root = Path(__file__).resolve().parent.parent
 dest = args.destination.expanduser().absolute()
 if dest.exists():
     raise SystemExit('Destination already exists; choose a new directory.')
-allowed_files = ['Package.swift', 'Info.plist', 'README.md', 'LICENSE', 'NOTICE.md', 'CONTRIBUTING.md', '.gitignore',
+allowed_files = ['Package.swift', 'Info.plist', 'README.md', 'CHANGELOG.md', 'LICENSE', 'NOTICE.md', 'CONTRIBUTING.md', '.gitignore',
                  'docs/INSTALL.md', 'docs/COMPATIBILITY.md', 'docs/ACCEPTANCE.md']
 allowed_dirs = ['Sources', 'Tests', 'scripts', '.github', 'docs/screenshots']
 def ignored(folder, names):

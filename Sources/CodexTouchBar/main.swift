@@ -73,12 +73,19 @@ if args.contains("--probe") {
 }
 if args.contains("--probe-system-controls") {
     let controls = SystemControls()
-    print(controls.adjust(.volume, delta: 0))
+    print(controls.adjust(.volume, delta: 0).message)
     controls.end()
-    print(controls.adjust(.brightness, delta: 0))
+    print(controls.adjust(.brightness, delta: 0).message)
     exit(0)
 }
 let app = NSApplication.shared
+if let directory = value(after: "--verify-control-hud") {
+    app.setActivationPolicy(.accessory)
+    let view = DashboardView(frame: NSRect(x: 0, y: 0, width: 1004, height: 30))
+    let ok = view.verifyControlHUD(to: URL(fileURLWithPath: directory))
+    print(ok ? "PASS synchronized HUD, replacement, auto-hide, cancellation and unchanged focus" : "FAIL control HUD")
+    exit(ok ? 0 : 1)
+}
 if args.contains("--verify-control-input") {
     let view = DashboardView(frame: NSRect(x: 0, y: 0, width: 1004, height: 30))
     let ok = view.verifyControlInput()

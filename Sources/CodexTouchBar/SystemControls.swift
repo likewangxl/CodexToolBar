@@ -3,6 +3,12 @@ import AudioToolbox
 import MonitorCore
 import TouchBarBridge
 
+struct SystemControlFeedback {
+    let control: ControlSwipe.Control
+    let message: String
+    let fraction: Double?
+}
+
 final class SystemControls {
     private var device = AudioObjectID(kAudioObjectUnknown)
     private var display: CGDirectDisplayID = 0
@@ -14,7 +20,13 @@ final class SystemControls {
 
     func end() { level = nil; control = nil }
 
-    func adjust(_ kind: ControlSwipe.Control, delta: Double) -> String {
+    func adjust(_ kind: ControlSwipe.Control, delta: Double) -> SystemControlFeedback {
+        let message = adjustMessage(kind, delta: delta)
+        return SystemControlFeedback(control: kind, message: message,
+                                     fraction: message.hasSuffix("%") ? level.map(Double.init) : nil)
+    }
+
+    private func adjustMessage(_ kind: ControlSwipe.Control, delta: Double) -> String {
         let title = kind == .volume ? "音量" : "亮度"
         if control == nil {
             control = kind

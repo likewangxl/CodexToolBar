@@ -7,6 +7,7 @@ import TouchBarBridge
 final class DashboardView: NSButton {
     private let controlSwipe = ControlSwipeRecognizer()
     private let systemControls = SystemControls()
+    private let controlHUD = ControlHUD()
     private var controlsCaptured = false
     private var controlFeedback: String?
     private var feedbackDismissal: DispatchWorkItem?
@@ -23,17 +24,52 @@ final class DashboardView: NSButton {
         }
         controlSwipe.onChange = { [weak self] kind, delta in
             guard let self else { return }
-            self.controlFeedback = self.systemControls.adjust(kind, delta: delta)
-            self.needsDisplay = true
+            let feedback = self.systemControls.adjust(kind, delta: delta)
+            self.showControlFeedback(feedback)
         }
         controlSwipe.onFinish = { [weak self] in self?.finishControlSwipe() }
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
+    private func showControlFeedback(_ feedback: SystemControlFeedback) {
+        feedbackDismissal?.cancel()
+        controlFeedback = feedback.message
+        controlHUD.show(feedback)
+        needsDisplay = true
+    }
+
+    func verifyControlHUD(to directory: URL) -> Bool {
+        do { try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true) }
+        catch { return false }
+        let frontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
+        let volume = SystemControlFeedback(control: .volume, message: "音量  50%", fraction: 0.5)
+        showControlFeedback(volume)
+        RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+        guard controlHUD.isVisible, controlFeedback == volume.message,
+              controlHUD.renderPreview(to: directory.appendingPathComponent("volume.png")) else { return false }
+        finishControlSwipe()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.4))
+        let brightness = SystemControlFeedback(control: .brightness, message: "亮度  75%", fraction: 0.75)
+        showControlFeedback(brightness)
+        RunLoop.main.run(until: Date().addingTimeInterval(0.5))
+        guard controlHUD.isVisible, controlFeedback == brightness.message,
+              controlHUD.renderPreview(to: directory.appendingPathComponent("brightness.png")) else { return false }
+        showControlFeedback(SystemControlFeedback(control: .volume, message: "当前音频设备不支持调节音量", fraction: nil))
+        guard controlHUD.renderPreview(to: directory.appendingPathComponent("unavailable.png")) else { return false }
+        finishControlSwipe()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.9))
+        guard !controlHUD.isVisible, controlFeedback == nil else { return false }
+        showControlFeedback(volume)
+        cancelControlSwipe()
+        return !controlHUD.isVisible && controlFeedback == nil && NSApp.keyWindow == nil
+            && NSWorkspace.shared.frontmostApplication?.processIdentifier == frontmost
+    }
+
     private func finishControlSwipe() {
         controlsCaptured = false
         suppressTapUntil = Date().addingTimeInterval(0.25)
         systemControls.end()
+        controlHUD.finish()
         feedbackDismissal?.cancel()
         let work = DispatchWorkItem { [weak self] in
             self?.controlFeedback = nil; self?.needsDisplay = true
@@ -47,6 +83,7 @@ final class DashboardView: NSButton {
         finishControlSwipe()
         feedbackDismissal?.cancel()
         controlFeedback = nil
+        controlHUD.hide()
         needsDisplay = true
     }
     func previewControlFeedback() { controlFeedback = "音量  50%"; needsDisplay = true }

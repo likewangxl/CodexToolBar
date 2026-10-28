@@ -2,7 +2,9 @@
 
 A lightweight, independent macOS Touch Bar companion for the Codex desktop app.
 
-Swift + AppKit 原生工具，版本 **0.8.2**。在 Touch Bar 上查看最近两个任务、执行步骤、ctx、账户额度，并用语音补充指令。面向配有 Touch Bar 的 Mac；界面目前以中文为主。
+Swift + AppKit 原生工具，版本 **0.8.2（构建 13）**。在 Touch Bar 上查看最近两个任务、执行步骤、ctx、账户额度，并用语音补充指令。面向配有 Touch Bar 的 Mac；界面目前以中文为主。
+
+本次更新：双指调音量、三指调亮度时，屏幕同步显示图标、百分比和进度条。完整变化、验证结果与待验收项见 [更新记录](CHANGELOG.md)。
 
 公开名称为 **CodexToolBar**。为兼容已有安装，Swift target、可执行文件和应用目录暂沿用 `CodexTouchBar`，bundle id 保持 `local.codex.touchbar`。
 
@@ -48,7 +50,7 @@ swift test
 
 ## Touch Bar 手势
 
-Touch Bar 手势：工具显示区域内，双指左右滑动调节当前输出设备音量，三指左右滑动调节内置屏幕亮度。左滑降低、右滑提高；手指数稳定约 0.15 秒且滑动超过阈值后开始，约 400 pt 对应完整调节范围。亮度最低为 5%。调节时临时显示百分比，松手后恢复原页面。
+Touch Bar 手势：工具显示区域内，双指左右滑动调节当前输出设备音量，三指左右滑动调节内置屏幕亮度。左滑降低、右滑提高；手指数稳定约 0.15 秒且滑动超过阈值后开始，约 400 pt 对应完整调节范围。亮度最低为 5%。调节时 Touch Bar 临时显示百分比，屏幕下方同步显示图标、百分比与进度条；屏幕提示不抢键盘焦点、不拦截鼠标，松手约 0.8 秒后自动消失。Touch Bar 松手后恢复原页面。
 
 多指触摸会阻止任务、语音等按钮动作；调节开始后改变手指数会停止本次调节，需全部松手再开始。锁屏、休眠及手动收起会取消手势。系统控制条、其他应用的 Touch Bar 区域及外接显示器不在控制范围内。不支持的软件音量或亮度接口会显示不可调节。亮度使用运行时检测的 DisplayServices 私有接口；真实多指操作和不同音频设备需实机验收。系统“Touch Bar 缩放”可能影响手势识别。
 
@@ -81,6 +83,8 @@ CI 验证 Swift、模拟协议、构建及签名，不代表通过真实 Touch B
 swift test
 ./scripts/build-app.sh
 python3 scripts/smoke-ipc.py .build/release/CodexTouchBar
+# 在已登录的图形桌面运行：短暂显示模拟 HUD，不修改系统音量或亮度
+.build/release/CodexTouchBar --verify-control-hud /tmp/codex-control-hud-review
 # 生成新的源代码审阅目录，不上传、不初始化 Git
 python3 scripts/export-source.py /tmp/codex-touchbar-source-review
 ```
